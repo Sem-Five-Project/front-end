@@ -1,6 +1,6 @@
 // API utilities for backend communication
 
-const API_BASE_URL = 'http://localhost:8000'; // Update with your backend URL
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'; // Update with your backend URL
 
 interface FCMTokenData {
   token: string;
