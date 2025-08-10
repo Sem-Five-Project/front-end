@@ -1,6 +1,68 @@
+"use client"; // Important for Next.js App Router to enable client-side hooks
+
 import Image from "next/image";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { messaging, getToken, onMessage } from "../lib/firebaseMessaging";
+import { sendFCMTokenToBackend } from "../lib/api";
+import { isAuthenticated } from "../lib/auth";
+
+const VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || "";
 
 export default function Home() {
+  const router = useRouter();
+  
+  useEffect(() => {
+    // Redirect authenticated users to dashboard
+    if (isAuthenticated()) {
+      router.push('/dashboard');
+      return;
+    }
+
+    async function requestPermission() {
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        try {
+          const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
+          if (currentToken) {
+            console.log("FCM Token:", currentToken);
+            
+            // Send token to backend
+            const success = await sendFCMTokenToBackend({
+              token: currentToken,
+              // userId: 'user-id-here', // Add user ID if you have authentication
+              deviceType: 'web',
+            });
+            
+            if (success) {
+              console.log("FCM token successfully sent to backend");
+            } else {
+              console.error("Failed to send FCM token to backend");
+            }
+            
+          } else {
+            console.log("No registration token available.");
+          }
+        } catch (err) {
+          console.error("Error getting token:", err);
+        }
+      } else {
+        console.log("Notification permission denied");
+      }
+    }
+
+    requestPermission();
+
+    const unsubscribe = onMessage(messaging, (payload) => {
+      console.log("Foreground message received:", payload);
+      // Optionally show UI notification here
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [router]);
+
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
@@ -20,14 +82,27 @@ export default function Home() {
             </code>
             .
           </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
+          <li className="tracking-[-.01em]">Save and see your changes instantly.</li>
         </ol>
 
         <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
+          <button
+            onClick={() => router.push('/login')}
             className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
+          >
+            Login
+          </button>
+          <button
+            onClick={() => router.push('/register')}
+            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
+          >
+            Register
+          </button>
+        </div>
+
+        <div className="flex gap-4 items-center flex-col sm:flex-row mt-4">
+          <a
+            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-blue-600 text-white gap-2 hover:bg-blue-700 font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
             href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
             target="_blank"
             rel="noopener noreferrer"
@@ -58,13 +133,7 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
+          <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
           Learn
         </a>
         <a
@@ -73,13 +142,7 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
+          <Image aria-hidden src="/window.svg" alt="Window icon" width={16} height={16} />
           Examples
         </a>
         <a
@@ -88,13 +151,7 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
+          <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
           Go to nextjs.org →
         </a>
       </footer>
