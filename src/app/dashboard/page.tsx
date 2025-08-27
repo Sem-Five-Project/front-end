@@ -1,44 +1,71 @@
 'use client';
-import { useEffect, useState } from 'react';
-import Cookies from 'js-cookie';
-import {jwtDecode} from 'jwt-decode';
 
-type DecodedToken = {
-  role: string;
-  sub: string;
-  iat: number;
-  exp: number;
-  name: string; 
-};
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { getAuthToken, removeAuthToken, isAuthenticated } from '../../lib/auth';
 
 export default function Dashboard() {
-  const [tokenData, setTokenData] = useState<DecodedToken | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    const token = Cookies.get('token');
-    if (token) {
-      try {
-        const decoded: DecodedToken = jwtDecode(token);
-        setTokenData(decoded);
-      } catch (error) {
-        console.error('Invalid token:', error);
-      }
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
+      router.push('/login');
+      return;
     }
-  }, []);
+    setIsLoading(false);
+  }, [router]);
+
+  const handleLogout = () => {
+    removeAuthToken();
+    router.push('/login');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
-
-      {tokenData ? (
-        <div className="bg-white p-6 rounded shadow-md text-center">
-          <p><strong>Role:</strong> {tokenData.role}</p>
-          <p><strong>Email (sub):</strong> {tokenData.sub}</p>
-            <p><strong>Name:</strong> {tokenData.name}</p>
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <h1 className="text-xl font-semibold text-gray-900">Edimy Dashboard</h1>
+            </div>
+            <div className="flex items-center">
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
         </div>
-      ) : (
-        <p>Loading token data...</p>
-      )}
+      </nav>
+
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          <div className="border-4 border-dashed border-gray-200 rounded-lg h-96 flex items-center justify-center">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome to Edimy!</h2>
+              <p className="text-gray-600 mb-4">You have successfully logged in.</p>
+              <p className="text-sm text-gray-500">
+                Your session token is stored and notifications have been set up.
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
