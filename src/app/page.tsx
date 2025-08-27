@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { messaging, getToken, onMessage } from "../lib/firebaseMessaging";
-import { sendFCMTokenToBackend } from "../lib/api";
+//import { sendFCMTokenToBackend } from "../lib/api";
 import { isAuthenticated } from "../lib/auth";
 
 const VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || "";
@@ -19,48 +19,48 @@ export default function Home() {
       return;
     }
 
-    async function requestPermission() {
-      const permission = await Notification.requestPermission();
-      if (permission === "granted") {
-        try {
-          const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
-          if (currentToken) {
-            console.log("FCM Token:", currentToken);
+    // async function requestPermission() {
+    //   const permission = await Notification.requestPermission();
+    //   if (permission === "granted") {
+    //     try {
+    //       const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
+    //       if (currentToken) {
+    //         console.log("FCM Token:", currentToken);
             
-            // Send token to backend
-            const success = await sendFCMTokenToBackend({
-              token: currentToken,
-              // userId: 'user-id-here', // Add user ID if you have authentication
-              deviceType: 'web',
-            });
+    //         // Send token to backend
+    //         const success = await sendFCMTokenToBackend({
+    //           token: currentToken,
+    //           // userId: 'user-id-here', // Add user ID if you have authentication
+    //           deviceType: 'web',
+    //         });
             
-            if (success) {
-              console.log("FCM token successfully sent to backend");
-            } else {
-              console.error("Failed to send FCM token to backend");
-            }
+    //         if (success) {
+    //           console.log("FCM token successfully sent to backend");
+    //         } else {
+    //           console.error("Failed to send FCM token to backend");
+    //         }
             
-          } else {
-            console.log("No registration token available.");
-          }
-        } catch (err) {
-          console.error("Error getting token:", err);
-        }
-      } else {
-        console.log("Notification permission denied");
-      }
-    }
+    //       } else {
+    //         console.log("No registration token available.");
+    //       }
+    //     } catch (err) {
+    //       console.error("Error getting token:", err);
+    //     }
+    //   } else {
+    //     console.log("Notification permission denied");
+    //   }
+    // }
 
-    requestPermission();
+    //requestPermission();
 
-    const unsubscribe = onMessage(messaging, (payload) => {
-      console.log("Foreground message received:", payload);
-      // Optionally show UI notification here
-    });
+    // const unsubscribe = onMessage(messaging, (payload) => {
+    //   console.log("Foreground message received:", payload);
+    //   // Optionally show UI notification here
+    // });
 
-    return () => {
-      unsubscribe();
-    };
+    // return () => {
+    //   unsubscribe();
+    // };
   }, [router]);
 
   return (

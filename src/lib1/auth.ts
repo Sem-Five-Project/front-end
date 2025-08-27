@@ -36,7 +36,6 @@ export function removeAuthToken(): void {
 }
 
 export function isAuthenticated(): boolean {
-  console.log('Checking authentication token...');
   return getAuthToken() !== null;
 }
 

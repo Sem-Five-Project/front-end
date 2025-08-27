@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { login, setAuthToken, type LoginRequest } from '../../lib/auth';
-import { sendFCMTokenToBackend } from '../../lib/api';
+//import { sendFCMTokenToBackend } from '../../lib/api';
 import { messaging, getToken } from '../../lib/firebaseMessaging';
 
 const VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || "";
@@ -23,25 +23,25 @@ export default function LoginPage() {
     setFormData({...formData, [e.target.name]: e.target.value});
   };
 
-  const setupNotifications = async (userId?: string) => {
-    try {
-      const permission = await Notification.requestPermission();
-      if (permission === "granted") {
-        const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
-        if (currentToken) {
-          await sendFCMTokenToBackend({
-            token: currentToken,
-            userId: userId,
-            deviceType: 'web',
-          });
-          console.log("FCM token sent for logged in user");
-        }
-      }
-    } catch (error) {
-      console.log("Error setting up notifications:", error);
-      // Don't block login flow for notification errors
-    }
-  };
+  // const setupNotifications = async (userId?: string) => {
+  //   try {
+  //     const permission = await Notification.requestPermission();
+  //     if (permission === "granted") {
+  //       const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
+  //       if (currentToken) {
+  //         await sendFCMTokenToBackend({
+  //           token: currentToken,
+  //           userId: userId,
+  //           deviceType: 'web',
+  //         });
+  //         console.log("FCM token sent for logged in user");
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.log("Error setting up notifications:", error);
+  //     // Don't block login flow for notification errors
+  //   }
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +67,7 @@ export default function LoginPage() {
       setSuccess('Login successful! Redirecting...');
       
       // Setup notifications for the logged-in user
-      await setupNotifications(formData.email);
+      //await setupNotifications(formData.email);
       
       // Redirect to dashboard or home page
       setTimeout(() => {
