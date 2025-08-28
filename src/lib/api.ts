@@ -106,10 +106,11 @@ export const authAPI = {
         data: {
           user: {
             id: 'mock-user-id',
-            fullName: data.fullName,
+            firstName: data.fullName.split(' ')[0],
+            lastName: data.fullName.split(' ').slice(1).join(' ') || '',
             username: data.username,
             email: data.email,
-            userType: data.userType,
+            role: data.userType,
             isVerified: false,
             createdAt: new Date().toISOString(),
           },
@@ -121,6 +122,8 @@ export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<ApiResponse<{ user: User }>> => {
     try {
       const response = await api.post('/auth/login', credentials);
+            console.log("login response main :",response.data)
+
       return {
         success: true,
         data: response.data,
@@ -134,10 +137,11 @@ export const authAPI = {
           data: {
             user: {
               id: 'mock-user-id',
-              fullName: 'Test User',
+              firstName: 'Test',
+              lastName: 'User',
               username: 'testuser',
               email: 'test@example.com',
-              userType: 'student',
+              role: 'STUDENT',
               isVerified: true,
               createdAt: new Date().toISOString(),
             },
@@ -182,6 +186,7 @@ export const authAPI = {
       };
     }
   },
+  
   getCurrentUser: async (token?: string): Promise<ApiResponse<{ user: User }>> => {
   try {
     // If a token is passed explicitly, use it for this request
@@ -189,8 +194,8 @@ export const authAPI = {
       headers: { Authorization: `Bearer ${token}` }
     } : {});
 
-    console.log('Get current user response:', response);
-    return { success: true, data: { user: response.data } };
+      console.log("getCurrentUser response main :",response.data)
+    return { success: true, data: { user: response.data.data.user } };
   } catch (error) {
     console.error('Get current user failed:', error);
     return { 
@@ -228,7 +233,7 @@ export const authAPI = {
         },
       });
       console.log('Get current user response:', response);
-      return { success: true, data: { user: response.data } };
+      return { success: true, data: response.data.data  };
     } catch (error) {
       console.error('Get current user failed:', error);
       return { 
@@ -273,53 +278,89 @@ export const authAPI = {
 };
 
 export const tutorAPI = {
-  searchTutors: async (filters: FilterOptions, page: number = 1, limit: number = 12): Promise<ApiResponse<{ tutors: Tutor[]; total: number; totalPages: number }>> => {
-    try {
-      const paramsObj: Record<string, string> = {
-        page: page.toString(),
-        limit: limit.toString(),
-      };
-      Object.entries(filters).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          paramsObj[key] = value.join(',');
-        } else if (value !== undefined) {
-          paramsObj[key] = value.toString();
-        }
-      });
-      const params = new URLSearchParams(paramsObj);
-      const response = await api.get(`/tutors/search?${params}`);
-      return response.data;
-    } catch (error) {
-      console.error('Search tutors failed:', error);
-      // Mock data for frontend testing
-      const mockTutors: Tutor[] = Array.from({ length: limit }, (_, i) => ({
-        id: `tutor-${page}-${i}`,
-        fullName: `Dr. Tutor ${page}-${i + 1}`,
-        username: `tutor${page}${i}`,
-        email: `tutor${page}${i}@example.com`,
-        userType: 'tutor',
-        isVerified: true,
-        createdAt: new Date().toISOString(),
-        subjects: ['Mathematics', 'Physics', 'Chemistry'][Math.floor(Math.random() * 3)] ? ['Mathematics'] : ['Physics', 'Chemistry'],
-        experience: Math.floor(Math.random() * 10) + 1,
-        rating: 4 + Math.random(),
-        classCompletionRate: 85 + Math.random() * 15,
-        bio: 'Experienced tutor with excellent teaching skills.',
-        hourlyRate: 25 + Math.floor(Math.random() * 75),
-        totalClasses: Math.floor(Math.random() * 1000) + 100,
-        completedClasses: Math.floor(Math.random() * 800) + 80,
-      }));
+  // searchTutors: async (filters: FilterOptions, page: number = 1, limit: number = 12): Promise<ApiResponse<{ tutors: Tutor[]; total: number; totalPages: number }>> => {
+  //   try {
+  //     const paramsObj: Record<string, string> = {
+  //       page: page.toString(),
+  //       limit: limit.toString(),
+  //     };
+  //     Object.entries(filters).forEach(([key, value]) => {
+  //       if (Array.isArray(value)) {
+  //         paramsObj[key] = value.join(',');
+  //       } else if (value !== undefined) {
+  //         paramsObj[key] = value.toString();
+  //       }
+  //     });
+  //     const params = new URLSearchParams(paramsObj);
+  //     const response = await api.get(`/tutors/search?${params}`);
+  //     return response.data;
+  //   } catch (error) {
+  //     console.error('Search tutors failed:', error);
+  //     // Mock data for frontend testing
+  //     const mockTutors: Tutor[] = Array.from({ length: limit }, (_, i) => ({
+  //       id: `tutor-${page}-${i}`,
+  //       firstName: `Tutor`,
+  //       lastName: `${page}-${i + 1}`,
+  //       username: `tutor${page}${i}`,
+  //       email: `tutor${page}${i}@example.com`,
+  //       role: 'TUTOR',
+  //       isVerified: true,
+  //       createdAt: new Date().toISOString(),
+  //       subjects: ['Mathematics', 'Physics', 'Chemistry'].slice(0, Math.floor(Math.random() * 3) + 1),
+  //       experience: Math.floor(Math.random() * 10) + 1,
+  //       rating: 4 + Math.random(),
+  //       classCompletionRate: 85 + Math.random() * 15,
+  //       bio: 'Experienced tutor with excellent teaching skills.',
+  //       hourlyRate: 25 + Math.floor(Math.random() * 75),
+  //       totalClasses: Math.floor(Math.random() * 1000) + 100,
+  //       completedClasses: Math.floor(Math.random() * 800) + 80,
+  //     }));
       
-      return {
-        success: true,
-        data: {
-          tutors: mockTutors,
-          total: 150,
-          totalPages: Math.ceil(150 / limit),
-        },
-      };
-    }
-  },
+  //     return {
+  //       success: true,
+  //       data: {
+  //         tutors: mockTutors,
+  //         total: 150,
+  //         totalPages: Math.ceil(150 / limit),
+  //       },
+  //     };
+  //   }
+  // },
+searchTutors: async (
+  filters: FilterOptions,
+  page: number = 1,
+  limit: number = 12
+): Promise<ApiResponse<{ tutors: Tutor[]; total: number; totalPages: number }>> => {
+
+  // Always generate mock tutors
+  const mockTutors: Tutor[] = Array.from({ length: limit }, (_, i) => ({
+    id: `tutor-${page}-${i}`,
+    firstName: `Tutor`,
+    lastName: `${page}-${i + 1}`,
+    username: `tutor${page}${i}`,
+    email: `tutor${page}${i}@example.com`,
+    role: 'TUTOR',
+    isVerified: true,
+    createdAt: new Date().toISOString(),
+    subjects: ['Mathematics', 'Physics', 'Chemistry'].slice(0, Math.floor(Math.random() * 3) + 1),
+    experience: Math.floor(Math.random() * 10) + 1,
+    rating: 4 + Math.random(),
+    classCompletionRate: 85 + Math.random() * 15,
+    bio: 'Experienced tutor with excellent teaching skills.',
+    hourlyRate: 25 + Math.floor(Math.random() * 75),
+    totalClasses: Math.floor(Math.random() * 1000) + 100,
+    completedClasses: Math.floor(Math.random() * 800) + 80,
+  }));
+
+  return {
+    success: true,
+    data: {
+      tutors: mockTutors,
+      total: 150,
+      totalPages: Math.ceil(150 / limit),
+    },
+  };
+},
 
   getTutorById: async (id: string): Promise<ApiResponse<Tutor>> => {
     try {
@@ -394,10 +435,11 @@ export const bookingAPI = {
           createdAt: new Date().toISOString(),
           tutor: {
             id: 'tutor-1',
-            fullName: 'Dr. Sarah Johnson',
+            firstName: 'Dr. Sarah',
+            lastName: 'Johnson',
             username: 'sarahj',
             email: 'sarah@example.com',
-            userType: 'tutor',
+            role: 'TUTOR',
             isVerified: true,
             createdAt: new Date().toISOString(),
             subjects: ['Mathematics'],

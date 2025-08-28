@@ -132,8 +132,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     checkAuthStatus();
-    console.log("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999")
   }, []);
+    useEffect(() => {
+console.log("userrrrrrrrrrrrrrr :",user)  }, [user]);
 
   // const checkAuthStatus = async () => {
   //   try {

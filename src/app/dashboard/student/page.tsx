@@ -17,9 +17,7 @@ export default function StudentDashboard() {
   const { user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('home');
-  
-  console.log("StudentDashboard render - user:", user);
+console.log("StudentDashboard render - user:", user);
   // useEffect(() => {
   //   loadUserBookings();
   // }, []);
@@ -91,7 +89,7 @@ export default function StudentDashboard() {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-2">Welcome back, {user?.firstName} {user?.lastName}!</h1>
+        <h1 className="text-2xl font-bold mb-2">Welcome back, {user?.fullName}!</h1>
         <p className="text-blue-100">Ready to continue your learning journey?</p>
       </div>
 
@@ -130,11 +128,11 @@ export default function StudentDashboard() {
                         <Avatar>
                           <AvatarImage src={booking.tutor.profileImage} />
                           <AvatarFallback>
-                            {booking.tutor.firstName?.charAt(0)}{booking.tutor.lastName?.charAt(0)}
+                            {booking.tutor.fullName.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <h4 className="font-medium">{booking.tutor.firstName} {booking.tutor.lastName}</h4>
+                          <h4 className="font-medium">{booking.tutor.fullName}</h4>
                           <p className="text-sm text-muted-foreground">
                             {booking.tutor.subjects.join(', ')}
                           </p>
@@ -193,7 +191,7 @@ export default function StudentDashboard() {
                           </div>
                         </div>
                         <div>
-                          <h4 className="font-medium">{booking.tutor.firstName} {booking.tutor.lastName}</h4>
+                          <h4 className="font-medium">{booking.tutor.fullName}</h4>
                           <p className="text-sm text-muted-foreground">
                             {formatTime(booking.slot.startTime)} - {formatTime(booking.slot.endTime)}
                           </p>

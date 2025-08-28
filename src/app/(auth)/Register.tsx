@@ -178,7 +178,9 @@ export const Register: React.FC = () => {
       
       if (response.success && response.data) {
         localStorage.setItem('pendingUser', JSON.stringify(response.data.user));
-        localStorage.setItem('authToken', response.data.token);
+        if (response.accessToken) {
+          localStorage.setItem('authToken', response.accessToken);
+        }
         router.push('/verify-email');
       } else {
         setError(response.error || 'Registration failed');
@@ -289,7 +291,7 @@ export const Register: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Switch
                 id="userType"
-                checked={formData.userType === 'tutor'}
+                checked={formData.userType === 'TUTOR'}
                 onCheckedChange={handleUserTypeToggle}
               />
               <Label htmlFor="userType" className="cursor-pointer">
